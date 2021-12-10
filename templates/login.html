@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <script src="https://www.w3schools.com/lib/w3data.js"></script>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,600,700,800"
+      rel="stylesheet"
+    />
+    <link
+      href="https://use.fontawesome.com/releases/v5.0.6/css/all.css"
+      rel="stylesheet"
+    />
+    <!-- <link href="../assets/css/nucleo-icons.css" rel="stylesheet" /> -->
+    <link
+      href="{{ url_for('static', filename='styles/login.css')}}"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+  </head>
+  <body>
+    <div id="loader" class="center"></div>
+
+    <div class="navbar">
+      <a href="./"><i class="fa fa-fw fa-home"></i> Home</a>
+      <a href="#"><i class="fa fa-fw fa-search"></i> Search</a>
+      <a href="./login.html"><i class="fa fa-fw fa-user"></i> Login</a>
+    </div>
+    <div class="register">
+      <h1>Register</h1>
+      <div class="links">
+        <a>Login</a>
+        <a class="active">Register</a>
+      </div>
+      <form onsubmit="event.preventDefault()" autocomplete="off">
+        <!-- method="POST"
+      action="./index" -->
+        <label for="username">
+          <i class="fas fa-user"></i>
+        </label>
+        <input
+          type="text"
+          name="username"
+          placeholder="Username"
+          id="username"
+          required
+        />
+        <label for="password">
+          <i class="fas fa-lock"></i>
+        </label>
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          id="password"
+          required
+        />
+        <label for="email">
+          <i class="fas fa-envelope"></i>
+        </label>
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          id="email"
+          required
+        />
+        <div class="msg"></div>
+        <button onclick="handleSubmit()">Register</button>
+      </form>
+    </div>
+    <script>
+      w3IncludeHTML();
+    </script>
+    <script>
+      const handleSubmit = (e) => {
+        if (
+          document.getElementById("username").value &&
+          document.getElementById("password").value &&
+          document.getElementById("email").value
+        ) {
+          fetch(
+            `./login?username=${
+              document.getElementById("username").value
+            }&password=${document.getElementById("password").value}&email=${
+              document.getElementById("email").value
+            }&register=True`.replace(" ", "%20"),
+            {
+              method: "POST",
+            }
+          );
+          location.href = `./`;
+        }
+      };
+      document.onreadystatechange = function () {
+        if (document.readyState !== "complete") {
+          document.querySelector("body").style.visibility = "hidden";
+          document.querySelector("#loader").style.visibility = "visible";
+        } else {
+          document.querySelector("#loader").style.display = "none";
+          document.querySelector("body").style.visibility = "visible";
+        }
+      };
+    </script>
+  </body>
+</html>
