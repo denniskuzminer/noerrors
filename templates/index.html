@@ -109,8 +109,12 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% for index, row in props.binanceData[0].iterrows(): %} {% if
-                  index < 10 %}
+                  {% if props.binanceData[0].empty %}
+                  <tr class="rowItem">
+                    Click search to add coins to your favorites!
+                  </tr>
+                  {% else %} {% for index, row in
+                  props.binanceData[0].iterrows(): %} {% if index < 10 %}
                   <tr class="rowItem" onclick="showPage(this)">
                     <td>{{row["Coin Pair"]}}</td>
                     <td>{{row["Close time"]}}</td>
@@ -134,7 +138,7 @@
                       {{"${:,.2f}".format(row["Volume"])}}
                     </td>
                   </tr>
-                  {% endif %} {% endfor %}
+                  {% endif %} {% endfor %} {% endif %}
                 </tbody>
               </table>
             </div>
@@ -158,7 +162,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for index, row in props.binanceData[0].iterrows(): %} {%
+                    {% for index, row in props.binanceData[1].iterrows(): %} {%
                     if index < 10 %}
                     <tr class="rowItem" onclick="showPage(this)">
                       <td>{{row["Coin Pair"]}}</td>
@@ -206,7 +210,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for index, row in props.binanceData[1].iterrows(): %} {%
+                    {% for index, row in props.binanceData[2].iterrows(): %} {%
                     if index < 10 %}
                     <tr class="rowItem" onclick="showPage(this)">
                       <td>{{row["Coin Pair"]}}</td>

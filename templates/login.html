@@ -37,13 +37,13 @@
     <div class="navbar">
       <a href="./"><i class="fa fa-fw fa-home"></i> Home</a>
       <a href="#"><i class="fa fa-fw fa-search"></i> Search</a>
-      <a href="./login.html"><i class="fa fa-fw fa-user"></i> Login</a>
+      <a href="./login"><i class="fa fa-fw fa-user"></i> Login</a>
     </div>
     <div class="register">
       <h1>Register</h1>
       <div class="links">
-        <a>Login</a>
-        <a class="active">Register</a>
+        <a href="#login">Login</a>
+        <a href="#register" class="active">Register</a>
       </div>
       <form onsubmit="event.preventDefault()" autocomplete="off">
         <!-- method="POST"
@@ -68,10 +68,11 @@
           id="password"
           required
         />
-        <label for="email">
+        <label class="emailController" for="email">
           <i class="fas fa-envelope"></i>
         </label>
         <input
+          class="emailController"
           type="email"
           name="email"
           placeholder="Email"
@@ -86,6 +87,13 @@
       w3IncludeHTML();
     </script>
     <script>
+      document.getElementsByClassName(
+        "emailController"
+      ).style.visibility = window.location.href.includes("#")
+        ? window.location.href.split("#")[1] == "register"
+          ? "visible"
+          : "hidden"
+        : "visible";
       const handleSubmit = (e) => {
         if (
           document.getElementById("username").value &&

@@ -1,0 +1,13 @@
+,Date published,url,anger,disgust,fear,joy,sadness,label,score
+0,2021-11-16T18:19:25Z,https://www.theguardian.com/business/live/2021/nov/16/uk-unemployment-rate-payrolls-vacancies-record-furlough-ftse-sterling-bitcoin-china-business-live,error,error,error,error,error,error,error
+1,2021-07-20T16:22:11Z,https://www.theguardian.com/business/live/2021/jul/20/stock-markets-ftse-bitcoin-economy-dow-housing-steel-business-live,error,error,error,error,error,error,error
+2,2021-06-15T17:58:15Z,https://www.theguardian.com/sport/live/2021/jun/15/royal-ascot-2021-day-one-live-st-james-palace-stakes,0.129028,0.094211,0.11861,0.634461,0.197505,positive,0.466974
+3,2021-05-24T18:49:22Z,https://www.theguardian.com/business/live/2021/may/24/commodity-prices-iron-ore-china-speculation-bitcoin-ftse-bank-of-england-business-live,error,error,error,error,error,error,error
+4,2021-05-19T20:58:11Z,https://www.theguardian.com/business/live/2021/may/19/uk-inflation-rises-april-energy-fuel-clothing-bitcoin-ftse-stock-markets-business-live,0.178891,0.115344,0.136634,0.178249,0.551064,negative,-0.321999
+5,2021-05-19T17:10:51Z,https://www.theguardian.com/technology/2021/may/19/tell-us-are-you-an-amateur-investor-affected-by-the-crash-of-cryptocurrencies,0.104546,0.051375,0.061908,0.113401,0.282579,negative,-0.29127
+6,2020-10-09T16:03:36Z,https://www.theguardian.com/science/2020/oct/09/renaissance-accountants-remembered,0.324813,0.052456,0.130398,0.360523,0.224709,negative,-0.403253
+7,2020-03-11T17:56:55Z,https://www.theguardian.com/sport/live/2020/mar/11/cheltenham-festival-2020-champion-chase-day-tiger-roll-in-action-live,0.149721,0.098148,0.11885,0.622319,0.510065,positive,0.43082
+8,2018-08-18T05:59:42Z,https://www.theguardian.com/lifeandstyle/2018/aug/18/rank-prince-harry-thomas-eaton,0.07605,0.016633,0.184914,0.339887,0.142801,positive,0.807637
+9,2018-05-18T05:00:49Z,https://www.theguardian.com/technology/2018/may/17/consensus-2018-conference-bitcoin-satoshi-is-female,0.114247,0.10369,0.078196,0.654316,0.517189,positive,0.40272
+10,2018-01-07T15:47:35Z,https://www.theguardian.com/technology/2018/jan/07/bitcoin-crypto-currencies-mcafee,0.141171,0.11732,0.168771,0.482747,0.543735,negative,-0.483922
+11,2017-11-24T08:59:00Z,https://www.theguardian.com/books/2017/nov/24/the-quantum-astrolgers-handbook-by-michael-brooks-review,0.12359,0.115344,0.118285,0.603534,0.228573,positive,0.437068

@@ -2,6 +2,8 @@ import requests
 import json
 from datetime import datetime
 import time
+
+# from functions import df_to_json
 from tabulate import tabulate
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor as PoolExecutor
@@ -17,9 +19,24 @@ class BinanceData:
 
     dfs = []
     validIntervals = []
-    username = ""
+    conn_string = "mysql://{user}:{password}@{host}:{port}/{db}?charset=utf8".format(
+        user="noerrors",
+        password="JXEf1zCCp5c=",
+        host="jsedocc7.scrc.nyu.edu",
+        port=3306,
+        db="NoErrors",
+        encoding="utf-8",
+    )
+    engine = sqlalchemy.create_engine(conn_string)
 
-    def __init__(self, username=""):
+    # def __new__(self, username):
+    #     self.username = username
+
+    # def __new__(cls, username):
+    #     print("new")
+    #     return super(BinanceData, cls).__new__(BinanceData)
+
+    def __init__(self):
         dfs = []
         validIntervals = [
             "1m",
@@ -38,32 +55,15 @@ class BinanceData:
             "1w",
             "1M",
         ]
-        print("Username: " + username)
-        username = username
 
-    @staticmethod
-    def getFavoriteSymbols():
-        conn_string = (
-            "mysql://{user}:{password}@{host}:{port}/{db}?charset=utf8".format(
-                user="noerrors",
-                password="JXEf1zCCp5c=",
-                host="jsedocc7.scrc.nyu.edu",
-                port=3306,
-                db="NoErrors",
-                encoding="utf-8",
-            )
-        )
-        engine = sqlalchemy.create_engine(conn_string)
-        query = f"""select * from favorites where username={username}"""
-        return pd.read_sql(query, con=engine)["favorite_coin_name"]
-            
+    def getFavoriteSymbols(self, username):
+        query = f"""select * from favorites where username=\'{username}\'"""
+        return pd.read_sql(query, con=self.engine)["favorite_coin_name"]
 
-    @staticmethod
-    def getAllBinanceSymbols():
+    def getAllBinanceSymbols(self):
         url = "https://api.binance.com/api/v3/exchangeInfo"
         response = requests.get(url)
         symbols = []
-        # print(response.json())
         try:
             for asset in response.json()["symbols"]:
                 if (
@@ -84,26 +84,31 @@ class BinanceData:
         # print("\n\nStart" + str(list(set(symbols))))
         return list(set(symbols))
 
-    @staticmethod
-    async def get_table_data(prevState, time):
+    async def get_table_data(self, username, prevState, time):
         async with aiohttp.ClientSession() as session:
             tasks = []
+            favTasks = []
             # print(BinanceData.getAllBinanceSymbols())
-            if username == "":
-                for symbol in BinanceData.getAllBinanceSymbols():
+            print("hello\n\n\n\n\n\n")
+
+            for symbol in self.getAllBinanceSymbols():
+                task = asyncio.ensure_future(
+                    self.getBinanceInfo(session, symbol, time, time, "1d")
+                )
+                tasks.append(task)
+            if username != "":
+                for symbol in self.getFavoriteSymbols(username):
                     task = asyncio.ensure_future(
-                        BinanceData.getBinanceInfo(session, symbol, time, time, "1d")
+                        self.getBinanceInfo(session, symbol, time, time, "1d")
                     )
-                    tasks.append(task)
-            else:
-                for symbol in BinanceData.getFavoriteSymbols():
-                    task = asyncio.ensure_future(
-                        BinanceData.getBinanceInfo(session, symbol, time, time, "1d")
-                    )
-                    tasks.append(task)
+                    favTasks.append(task)
 
             dfs = await asyncio.gather(*tasks)
-            # print(dfs)
+            favdfs = await asyncio.gather(*favTasks)
+            if len(favdfs) == 0:
+                dfFavorites = pd.concat(dfs)
+            else:
+                dfFavorites = pd.concat(favdfs)
             try:
                 df = pd.concat(dfs)
                 dfTopMovers = df.sort_values(
@@ -114,10 +119,10 @@ class BinanceData:
                 )
             except Exception as e:
                 return pd.DataFrame()
-            return dfTopMovers, dfTopPrice
+            return dfFavorites, dfTopMovers, dfTopPrice
 
-    @staticmethod
     async def getBinanceInfo(
+        self,
         session,
         symbol,
         startTime,
@@ -185,12 +190,12 @@ class BinanceData:
         except Exception as e:
             return None
 
-    @staticmethod
-    def run():
+    def run(self, username):
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         prevState = []
         # while True:
         table_data = asyncio.run(
-            BinanceData.get_table_data(prevState, str(datetime.now())[0:19])
+            self.get_table_data(username, prevState, str(datetime.now())[0:19])
         )
         # time.sleep(60)
         return table_data

@@ -1,0 +1,46 @@
+.MuiDataGrid-root .MuiDataGrid-cell {
+  border-bottom: 1px solid #525252 !important;
+  /* border-bottom: 1px solid #0d7377 !important; */
+}
+
+.MuiDataGrid-root {
+  border: 1px solid #525252 !important;
+  /* border: 1px solid #084547 !important; */
+}
+.MuiDataGrid-root .MuiDataGrid-columnSeparator {
+  color: #8a8a8a !important;
+  /* color: #0d7377 !important; */
+}
+
+.MuiDataGrid-root .MuiDataGrid-columnsContainer {
+  border-bottom: 1px solid #8a8a8a !important;
+
+  /* border-bottom: 1px solid #0d7377 !important; */
+}
+
+.MuiDrawer-paperAnchorDockedLeft {
+  border-right: 1px solid #8a8a8a !important;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.MuiDataGrid-row:hover {
+  background: #555 !important;
+}

@@ -1,0 +1,77 @@
+nav {
+  float: right;
+  color: #f9f9f9;
+}
+
+nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+nav li {
+  display: inline-block;
+  margin-left: 20px;
+  padding-top: 13px;
+  position: relative;
+}
+
+nav a {
+  color: #444;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+nav a:hover {
+  color: #000;
+}
+
+nav a::before {
+  content: "";
+  display: block;
+  height: 5px;
+  background-color: #444;
+
+  position: absolute;
+  top: 1;
+  width: 0%;
+
+  transition: all ease-in-out 250ms;
+}
+
+nav a:hover::before {
+  width: 100%;
+}
+
+.noTransition::before {
+  transition: none !important;
+  background-color: transparent !important;
+}
+
+/* 
+.MuiDataGrid-row.Mui-odd {
+  background-color: #f0ffe0;
+} */
+
+.container {
+  width: 80%;
+  margin: 0 auto;
+  margin-left: -630px;
+}
+
+header {
+  background: #55d6aa;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+header::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.logo {
+  float: left;
+  padding: 10px 0;
+}
