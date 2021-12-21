@@ -2,6 +2,9 @@ from flask import Flask, render_template, request
 from functions import binance
 from functions import test
 from functions import df_to_list
+from functions import figures
+from functions import prediction
+from functions import copy_of_kasiprice_prediction
 import pandas as pd
 import json
 import plotly
@@ -10,13 +13,11 @@ import plotly.express as px
 import datetime
 from flask_cors import CORS
 from flask import Response
+
+# import import_ipynb
+# import Copy_of_KasiPrice_Prediction
 import requests
 import plotly.graph_objects as go
-
-import pandas as pd
-
-from datetime import datetime
-
 
 app = Flask(__name__)
 CORS(app)
@@ -29,10 +30,48 @@ def index():
     bd = binance.BinanceData()
     binanceData = bd.run(props["username"])
     # props["binanceData"] = test.binanceData
-    # print(binanceData)
     props["binanceData"] = [df_to_list.df_to_list(df) for df in binanceData]
     props["tickers"] = bd.getAllBinanceSymbols()
-    # today = datetime.date.today()
+    plotData = figures.Figures()
+    df_coins = plotData.load_data_currency("USD")
+    df_mkt_caps = df_coins.loc[df_coins.index < 10]
+    fig = px.pie(
+        df_mkt_caps,
+        values="Market Cap",
+        names="Coin Name",
+        title="Top 10 Cryptos by Market Cap",
+    )
+    fig2 = px.pie(
+        df_mkt_caps,
+        values="Volume 24 Hours",
+        names="Coin Name",
+        title="Top 10 MOst Active Cryptos in Last 24hrs",
+    )
+    fig2.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="#2d353d",
+        plot_bgcolor="#2d353d",
+        margin_l=40,
+        margin_r=40,
+        margin_b=40,
+        # legend_title_text="Sentiment Label",
+        margin_t=50,
+        font_family="Montserrat",
+    )
+    fig.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="#2d353d",
+        plot_bgcolor="#2d353d",
+        margin_l=40,
+        margin_r=40,
+        margin_b=40,
+        # legend_title_text="Sentiment Label",
+        margin_t=50,
+        font_family="Montserrat",
+    )
+    props["CMCVol"], props["CMCActive"] = json.loads(fig.to_json()), json.loads(
+        fig2.to_json()
+    )
     return props
 
 
@@ -42,6 +81,29 @@ def logout():
     props["password"] = ""
     props["email"] = ""
     props["register"] = ""
+    return props
+
+
+@app.route("/add", methods=["POST"])
+def add():
+    conn_string = "mysql://{user}:{password}@{host}:{port}/{db}?charset=utf8".format(
+        user="noerrors",
+        password="JXEf1zCCp5c=",
+        host="jsedocc7.scrc.nyu.edu",
+        port=3306,
+        db="NoErrors",
+        encoding="utf-8",
+    )
+    engine = sqlalchemy.create_engine(conn_string)
+    try:
+        engine.execute(
+            f"""
+            insert into favorites(favorite_coin_name, username) values('{request.args["pair"]}', '{props["username"]}')""".replace(
+                "%20", " "
+            )
+        )
+    except Exception as e:
+        pass
     return props
 
 
@@ -97,157 +159,41 @@ def login():
 
 @app.route("/pair")
 def pair():
-    args = request.args
-    if "pair" in args:
-        pair = args["pair"]
-    ticker = ["ETHUSDT"]
-    price_df = searchBinance(
-        ticker,
-        startTime="2019-01-01 00:00:00",
-        endTime="2021-12-19 00:00:00",
-        interval="1d",
-    )
-    fig = go.Figure(
-        data=[
-            go.Candlestick(
-                x=price_df["Open time"],
-                open=price_df["Open"],
-                high=price_df["High"],
-                low=price_df["Low"],
-                close=price_df["Close"],
-            )
-        ]
-    )
-
-    fig.update_layout(
-        title="Price Chart",
-        yaxis_title="Price",
-        yaxis_tickprefix="$",
-        yaxis_tickformat=",.00",
-    )
-
-    props["fig"] = json.loads(fig.to_json())
-    print(fig)
-    return props
-
-
-validIntervals = [
-    "1m",
-    "3m",
-    "5m",
-    "15m",
-    "30m",
-    "1h",
-    "2h",
-    "4h",
-    "6h",
-    "8h",
-    "12h",
-    "1d",
-    "3d",
-    "1w",
-    "1M",
-]
-
-
-def searchBinance(
-    symbols,
-    startTime="2020-01-01 00:00:00",
-    endTime="2020-12-02 00:00:00",
-    interval="1M",
-):
-    if interval not in validIntervals:
-        raise ValueError("Please enter a valid interval: " + str(validIntervals))
-    dfs = []
-    url = "https://api.binance.com/api/v3/klines"
-    for symbol in symbols:
-        try:
-            params = {
-                "symbol": symbol,
-                "interval": interval,
-                "limit": 1000,
-                "startTime": int(
-                    datetime.strptime(startTime, "%Y-%m-%d %H:%M:%S").timestamp() * 1000
-                ),
-                "endTime": int(
-                    datetime.strptime(endTime, "%Y-%m-%d %H:%M:%S").timestamp() * 1000
-                ),
-            }
-            response = requests.get(url, params=params)
-            df = pd.DataFrame(response.json())
-            df.columns = [
-                "Open time",
-                "Open",
-                "High",
-                "Low",
-                "Close",
-                "Volume",
-                "Close time",
-                "Quote asset volume",
-                "Number of trades",
-                "Taker buy base asset volume",
-                "Taker buy quote asset volume",
-                "Ignore",
-            ]
-            df["Coin Pair"] = symbol
-            df["Open time"] = df["Open time"].apply(
-                lambda x: datetime.fromtimestamp(x / 1000.0)
-            )
-            df["Close time"] = df["Close time"].apply(
-                lambda x: datetime.fromtimestamp(x / 1000.0)
-            )
-            dfs.append(
-                df[
-                    [
-                        "Coin Pair",
-                        "Open time",
-                        "Open",
-                        "High",
-                        "Low",
-                        "Close",
-                        "Volume",
-                        "Close time",
-                    ]
-                ]
-            )
-            dfs.append(df[["Coin Pair", "Open time", "Open", "Close"]])
-        except Exception as e:
-            print(e)
-            continue
     try:
-        return pd.concat(dfs)
-    except:
-        return None
+        plotData = figures.Figures()
+        predictionData = prediction.Prediction()
 
-
-# @app.route("/pair")
-# def chart2():
-#     df = pd.DataFrame(
-#         {
-#             "Vegetables": [
-#                 "Lettuce",
-#                 "Cauliflower",
-#                 "Carrots",
-#                 "Lettuce",
-#                 "Cauliflower",
-#                 "Carrots",
-#             ],
-#             "Amount": [10, 15, 8, 5, 14, 25],
-#             "City": ["London", "London", "London", "Madrid", "Madrid", "Madrid"],
-#         }
-#     )
-
-#     fig = px.bar(df, x="Vegetables", y="Amount", color="City", barmode="stack")
-
-#     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-#     header = "Vegetables in Europe"
-#     description = """
-#     The rumor that vegetarians are having a hard time in London and Madrid can probably not be
-#     explained by this chart.
-#     """
-#     return render_template(
-#         "pair.html", graphJSON=graphJSON, header=header, description=description
-#     )
+        price_df = plotData.searchBinance(
+            symbols=[request.args["pair"]],
+            startTime="2019-06-01 00:00:00",
+            endTime=str(datetime.datetime.now())[0:19],
+            interval="1d",
+        )
+        price_df = price_df.sort_values(by=["Close time"], ascending=False)
+        print(price_df)
+        props["price"] = df_to_list.df_to_list(
+            price_df
+            # .drop_duplicates(
+            #     subset=None, keep="first", inplace=False
+            # )
+        )
+        props["fig"] = plotData.getPricePlot(price_df)
+        props["newsPlot"], props["newsAvgPlot"] = plotData.getNewsSentiment(
+            request.args["pair"].replace("USDT", "")
+        )
+        (
+            props["twitterPlot"],
+            props["twitterAvgPlot"],
+            props["twitterVolPlot"],
+        ) = plotData.getTwitterSentiment(request.args["pair"].replace("USDT", ""))
+        props["twitterPerdiction"] = copy_of_kasiprice_prediction.main(
+            "twitter",
+            request.args["pair"].replace("USDT", ""),
+            request.args["pair"].replace("USDT", ""),
+        )
+    except Exception as e:
+        print(e)
+    return props
 
 
 # $env:FLASK_APP="app.py"

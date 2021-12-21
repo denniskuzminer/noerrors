@@ -28,7 +28,7 @@ const theme = createMuiTheme({
     },
     secondary: {
       light: "#ff7476",
-      main: "#14FFEC",
+      main: "#058277",
       dark: "#bd0022",
       contrastText: "#fff",
     },

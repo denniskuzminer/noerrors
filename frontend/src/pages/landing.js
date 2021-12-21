@@ -8,6 +8,7 @@ import { borders } from "@material-ui/system";
 import InputBase from "@material-ui/core/InputBase";
 import SearchIcon from "@material-ui/icons/Search";
 import Tooltip from "@material-ui/core/Tooltip";
+import AddIcon from "@material-ui/icons/Add";
 import {
   LinearProgress,
   List,
@@ -37,9 +38,11 @@ import {
   Card,
   CardContent,
 } from "@material-ui/core";
+import Plot from "react-plotly.js";
 import MonetizationOnOutlinedIcon from "@material-ui/icons/MonetizationOnOutlined";
 import "../landing.css";
 import Nav from "../components/navigation";
+import Loading from "../components/loading";
 
 const back_end_uri = "http://127.0.0.1:5000/";
 
@@ -49,33 +52,43 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const styles = (theme) => ({
   root: {
-    margin: "100px 30px 100px 400px",
+    margin: "100px 200px 100px 200px",
     // marginLeft: "380px",
     overFlowX: "hidden",
   },
   heading: {
-    margin: "100px",
+    // margin: "100px",
+    margin: "100px 200px 100px 200px",
     marginBottom: "-80px",
-    width: "100%",
+    // width: "100%",
     height: "130px",
-    border: "1px solid #8a8a8a",
+    borderTop: "1px solid #8a8a8a",
+    borderBottom: "1px solid #8a8a8a",
   },
   headingContents: {
     marginTop: "30px",
-    marginLeft: "285px",
+    // marginLeft: "285px",
   },
   loading: {
-    left: "50%",
-    top: "50%",
-    padding: "10px",
+    backgroundColor: theme.palette.background.default,
+    height: "100vh",
+    width: "100%",
+    position: "absolute",
+  },
+  title: { marginBottom: "20px" },
+  loadingContainer: {
+    position: "absolute",
+    left: 600,
+    right: 600,
+    top: "40%",
   },
   searchBox: {
     // background: theme.palette.background.default,
     width: "900px",
     backgroundColor: theme.palette.background.default,
     height: "600px",
-    overflow: "scroll",
-    // position: "absolute",
+    overflowY: "scroll",
+    overflowX: "hidden",
   },
   container: {
     backgroundColor: theme.palette.background.default,
@@ -101,7 +114,10 @@ const styles = (theme) => ({
     width: "calc(100%)",
     marginTop: "30px",
   },
-  main: { backgroundColor: theme.palette.background.default },
+  main: {
+    overflowX: "hidden",
+    backgroundColor: theme.palette.background.default,
+  },
   slider: {
     /* border: "5px solid black"*/
   },
@@ -120,6 +136,7 @@ const styles = (theme) => ({
   searchResult: {
     backgroundColor: theme.palette.background.default,
     height: "60px",
+    cursor: "pointer",
     borderTop: "1px solid #8a8a8a",
     borderBottom: "1px solid #8a8a8a",
     // width: "97%",
@@ -183,6 +200,8 @@ const Landing = (props) => {
   const [showSearch, setShowSearch] = useState(false);
   const [orderBy, setOrderBy] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [CMCVol, setCMCVol] = useState({});
+  const [CMCActive, setCMCActive] = useState({});
   const [searchResults, setSearchResults] = useState([]);
   const [uiLoading, setuiLoading] = useState(true);
   let history = useHistory();
@@ -235,24 +254,12 @@ const Landing = (props) => {
       let tableRows = [];
       let tableColumns = [];
       setBinanceData(res.data);
-      console.log(res.data);
-      res.data.binanceData.forEach((tableList) => {
+      res.data.binanceData.forEach((tableList, idx) => {
         tableRows.push(tableList);
-        Object.keys(tableList[0]).forEach((key) => {
-          if (!["id", "AbsChange"].includes(key)) {
-            if (["Change"].includes(key)) {
-              tableColumns.push({
-                field: key,
-                headerName: key,
-                align: "center",
-                editable: false,
-                flex: 0.5,
-                renderCell: (params) => {
-                  return changeFormat(params, key);
-                },
-              });
-            } else {
-              if (["Close", "Open", "Volume"].includes(key)) {
+        if (tableList.length !== 0) {
+          Object.keys(tableList[0]).forEach((key) => {
+            if (!["id", "AbsChange"].includes(key)) {
+              if (["Change"].includes(key)) {
                 tableColumns.push({
                   field: key,
                   headerName: key,
@@ -264,20 +271,35 @@ const Landing = (props) => {
                   },
                 });
               } else {
-                tableColumns.push({
-                  field: key,
-                  headerName: key,
-                  align: "left",
-                  editable: false,
-                  flex: 0.5,
-                });
+                if (["Close", "Open", "Volume"].includes(key)) {
+                  tableColumns.push({
+                    field: key,
+                    headerName: key,
+                    align: "center",
+                    editable: false,
+                    flex: 0.5,
+                    renderCell: (params) => {
+                      return changeFormat(params, key);
+                    },
+                  });
+                } else {
+                  tableColumns.push({
+                    field: key,
+                    headerName: key,
+                    align: "left",
+                    editable: false,
+                    flex: 0.5,
+                  });
+                }
               }
             }
-          }
-        });
+          });
+        }
       });
       setTableRows(tableRows);
       setTableColumns(tableColumns);
+      setCMCVol(res.data.CMCVol);
+      setCMCActive(res.data.CMCActive);
       setuiLoading(false);
     });
   }, []);
@@ -291,6 +313,7 @@ const Landing = (props) => {
     console.log(event);
     history.push({
       pathname: `/pair?pair=${event.row["Coin Pair"]}`,
+      state: { pair: event.row["Coin Pair"] },
     });
   };
 
@@ -298,8 +321,33 @@ const Landing = (props) => {
     setValue(event.target.value === "" ? "" : Number(event.target.value));
   };
 
+  const handleAdd = async (event, pair) => {
+    event.stopPropagation();
+    console.log(pair);
+    await axios({
+      method: "POST",
+      url: `${back_end_uri}add?pair=${pair["Coin Pair"]}`,
+    }).then((res) => {
+      let tableRowsTemp = tableRows.map((item) =>
+        Object.assign([], item, { selected: false })
+      );
+      let temp = tableRowsTemp[0];
+      temp.push(pair);
+      tableRowsTemp[0] = temp;
+      setTableRows(tableRowsTemp);
+    });
+  };
+
   const handleShowSearch = () => {
     setShowSearch(!showSearch);
+  };
+
+  const handleSearchClick = (event) => {
+    let pair = event.currentTarget.getAttribute("pair");
+    history.push({
+      pathname: `/pair?pair=${pair}`,
+      state: { pair: pair },
+    });
   };
 
   const handleSearch = (event) => {
@@ -307,19 +355,16 @@ const Landing = (props) => {
     if (event.target.value === "") {
       setSearchResults([]);
     } else {
-      let filtered = binanceData.binanceData[0].filter((row) =>
+      let filtered = binanceData.binanceData[1].filter((row) =>
         row["Coin Pair"].includes(event.target.value.toUpperCase())
       );
+      console.log(filtered);
       setSearchResults(filtered);
     }
   };
 
   if (uiLoading) {
-    return (
-      <div className={classes.loading}>
-        <LinearProgress />
-      </div>
-    );
+    return <Loading />;
   } else {
     return (
       <div className={classes.main}>
@@ -332,7 +377,7 @@ const Landing = (props) => {
             setShowSearch={setShowSearch}
           />
         </AppBar>
-        <Drawer
+        {/* <Drawer
           style={{ backgroundColor: "#1C1C1C !important" }}
           className={classes.drawer}
           variant="permanent"
@@ -380,25 +425,8 @@ const Landing = (props) => {
                 }}
               />
             </ListItem>
-            {/* <ListItem>
-              <ListItemText />
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={"Coin Pair"}
-                onChange={handleSortByChange}
-              >
-                <MenuItem value={10}>Ten</MenuItem>
-                <MenuItem value={20}>Twenty</MenuItem>
-                <MenuItem value={30}>Thirty</MenuItem>
-                <MenuItem value={30}>Thirty</MenuItem>
-              </Select>
-            </ListItem>
-            <ListItem button>
-              <ListItemText />
-            </ListItem> */}
           </List>
-        </Drawer>
+        </Drawer> */}
         <Dialog
           open={showSearch}
           TransitionComponent={Transition}
@@ -426,14 +454,24 @@ const Landing = (props) => {
               </div>
               <div className={classes.searchResultContainer}>
                 {searchResults.map((row, i) => (
-                  <Card className={classes.searchResult} key={i}>
+                  <Card
+                    onClick={handleSearchClick}
+                    pair={row["Coin Pair"]}
+                    className={classes.searchResult}
+                    key={i}
+                  >
                     <CardContent>
-                      <table>
+                      <table style={{ width: "100%" }}>
                         <tbody>
                           <tr>
                             <td>{row["Coin Pair"]}</td>
                             <td>{changeFormatSearch(row, "Change")}</td>
                             <td>{changeFormatSearch(row, "Close")}</td>
+                            {binanceData["username"] !== "" && (
+                              <td>
+                                <AddIcon onClick={(e) => handleAdd(e, row)} />
+                              </td>
+                            )}
                           </tr>
                         </tbody>
                       </table>
@@ -454,7 +492,9 @@ const Landing = (props) => {
         </div>
         <div className={classes.root}>
           <div>
-            <Typography variant="h4">Currencies</Typography>
+            <Typography variant="h4">
+              {binanceData["username"] === "" ? "Currencies" : "Favorites"}
+            </Typography>
             <Box style={{ height: 400, width: "100%" }}>
               <DataGrid
                 className={classes.datagrid}
@@ -464,10 +504,20 @@ const Landing = (props) => {
                 borderColor="primary.dark"
                 density="standard"
                 hideFooter={true}
-                rows={tableRows[0]}
+                // rows={tableRows[1]}
+                rows={binanceData["username"] ? tableRows[0] : tableRows[3]}
                 columns={tableColumns}
                 onRowClick={handleRowClick}
-                id="id"
+                components={{
+                  NoRowsOverlay: () => (
+                    <center style={{ marginTop: "200px" }}>
+                      <Typography>
+                        No favorites yet. Add new currencies to favorite with
+                        the search bar.
+                      </Typography>
+                    </center>
+                  ),
+                }}
               />
             </Box>
             <table className={classes.grid}>
@@ -508,6 +558,40 @@ const Landing = (props) => {
                         id="id"
                       />
                     </Box>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div
+                      style={{ marginTop: "10px" }}
+                      className={classes.title}
+                    >
+                      <Typography variant="h4">
+                        Top 10 Cryptos by Market Cap
+                      </Typography>
+                    </div>
+                    <center>
+                      <Plot
+                        data={CMCVol ? CMCVol.data : {}}
+                        layout={CMCVol.layout}
+                      />
+                    </center>
+                  </td>
+                  <td>
+                    <div
+                      style={{ marginTop: "10px" }}
+                      className={classes.title}
+                    >
+                      <Typography variant="h4">
+                        Top 10 Most Active Cryptos in Last 24hrs
+                      </Typography>
+                    </div>
+                    <center>
+                      <Plot
+                        data={CMCActive ? CMCActive.data : {}}
+                        layout={CMCActive.layout}
+                      />
+                    </center>
                   </td>
                 </tr>
               </tbody>

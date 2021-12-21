@@ -5,7 +5,7 @@ import HomeIcon from "@material-ui/icons/Home";
 import SearchIcon from "@material-ui/icons/Search";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import "../nav.css";
-import { Toolbar, AppBar, CssBaseline } from "@material-ui/core";
+import { Toolbar, AppBar, CssBaseline, Box } from "@material-ui/core";
 import axios from "axios";
 
 const styles = (theme) => ({
@@ -58,7 +58,9 @@ const Nav = (props) => {
                 <ul>
                   <li>
                     <HomeIcon />
-                    <a href="./">Home</a>
+                    <a style={{ marginTop: "-10px" }} href="./">
+                      Home
+                    </a>
                   </li>
                   <li>
                     <SearchIcon />
@@ -72,7 +74,7 @@ const Nav = (props) => {
                       {binanceData === undefined || binanceData.username === ""
                         ? "Login"
                         : `Logout of ${binanceData.username}`}
-                      {console.log(binanceData)}
+                      {/* {console.log(binanceData)} */}
                     </a>
                   </li>
                 </ul>

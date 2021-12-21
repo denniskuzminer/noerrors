@@ -58,7 +58,10 @@ class BinanceData:
 
     def getFavoriteSymbols(self, username):
         query = f"""select * from favorites where username=\'{username}\'"""
-        return pd.read_sql(query, con=self.engine)["favorite_coin_name"]
+        df = pd.read_sql(query, con=self.engine)["favorite_coin_name"]
+        print(df)
+        print(username)
+        return df
 
     def getAllBinanceSymbols(self):
         url = "https://api.binance.com/api/v3/exchangeInfo"
@@ -106,11 +109,13 @@ class BinanceData:
             dfs = await asyncio.gather(*tasks)
             favdfs = await asyncio.gather(*favTasks)
             if len(favdfs) == 0:
-                dfFavorites = pd.concat(dfs)
+                dfFavorites = pd.DataFrame()
             else:
                 dfFavorites = pd.concat(favdfs)
             try:
                 df = pd.concat(dfs)
+                default = df.reset_index(drop=True)
+                dfFavorites = dfFavorites.reset_index(drop=True)
                 dfTopMovers = df.sort_values(
                     by="AbsChange", ascending=False
                 ).reset_index(drop=True)
@@ -119,7 +124,7 @@ class BinanceData:
                 )
             except Exception as e:
                 return pd.DataFrame()
-            return dfFavorites, dfTopMovers, dfTopPrice
+            return dfFavorites, dfTopMovers, dfTopPrice, default
 
     async def getBinanceInfo(
         self,
