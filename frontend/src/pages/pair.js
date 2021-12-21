@@ -312,3 +312,5 @@ const Pair = (props) => {
 };
 
 export default withStyles(styles)(Pair);
+
+// C:\Users\denni\AppData\Local\Programs\Python\Python38\Scripts>
