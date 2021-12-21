@@ -141,7 +141,7 @@ class Figures:
         )
         fig3 = px.histogram(
             df_twt,
-            x="Date",
+            x="label",
             color="label",
             color_discrete_map={
                 "Negative": "tomato",
@@ -165,10 +165,30 @@ class Figures:
             # yaxis_title="Count",
             # yaxis_tickformat=",.00",
         )
+        query = """
+        SELECT * FROM close_price_n_twitter_sentiments
+        """
+        df_reg_twt = pd.read_sql(query, con=engine)
+        df_reg_twt = df_reg_twt.loc[df_reg_twt["cryptocurrency token"] == coin_symbol]
+        dt = ["2021-12-04"]
+        df_twt.loc[df_twt["Date"].isin(dt)]
+        predict_price_twt = (
+            df_reg_twt["intercept"]
+            + df_twt["anger"].apply(lambda x: x * df_reg_twt["anger"])
+            + df_twt["digust"].apply(lambda x: x * df_reg_twt["disgust"])
+            + df_twt["fear"].apply(lambda x: x * df_reg_twt["fear"])
+            + df_twt["joy"].apply(lambda x: x * df_reg_twt["joy"])
+            + df_twt["sadness"].apply(lambda x: x * df_reg_twt["sadness"])
+        )
+        predict_price_twt["Date"] = df_twt["Date"]
+        predict_price_twt = predict_price_twt.rename(columns={5: "Predicted_Price"})
+        predict_price_twt = predict_price_twt.sort_values(by="Date", ascending=False)
+
         return (
             json.loads(fig.to_json()),
             json.loads(fig2.to_json()),
             json.loads(fig3.to_json()),
+            predict_price_twt,
         )
 
     def getNewsSentiment(self, coin_symbol):
@@ -253,6 +273,7 @@ class Figures:
             height=400,
             font_family="Montserrat",
         )
+
         return json.loads(fig.to_json()), json.loads(fig2.to_json())
 
     def searchBinance(

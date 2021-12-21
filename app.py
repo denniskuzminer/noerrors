@@ -4,7 +4,6 @@ from functions import test
 from functions import df_to_list
 from functions import figures
 from functions import prediction
-from functions import copy_of_kasiprice_prediction
 import pandas as pd
 import json
 import plotly
@@ -15,7 +14,8 @@ from flask_cors import CORS
 from flask import Response
 
 # import import_ipynb
-# import Copy_of_KasiPrice_Prediction
+
+# import Copy_of_[Kasi]Price_Prediction
 import requests
 import plotly.graph_objects as go
 
@@ -185,12 +185,15 @@ def pair():
             props["twitterPlot"],
             props["twitterAvgPlot"],
             props["twitterVolPlot"],
+            tempdf,
         ) = plotData.getTwitterSentiment(request.args["pair"].replace("USDT", ""))
-        props["twitterPerdiction"] = copy_of_kasiprice_prediction.main(
-            "twitter",
-            request.args["pair"].replace("USDT", ""),
-            request.args["pair"].replace("USDT", ""),
-        )
+        props["prediction"] = df_to_list.df_to_list(tempdf)
+
+        # props["twitterPerdiction"] = predictionData.main(
+        #     "twitter",
+        #     request.args["pair"].replace("USDT", ""),
+        #     request.args["pair"].replace("USDT", ""),
+        # )
     except Exception as e:
         print(e)
     return props

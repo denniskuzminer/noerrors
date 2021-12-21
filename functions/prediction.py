@@ -9,8 +9,7 @@ from sklearn.linear_model import LinearRegression
 import seaborn as sns
 from sqlalchemy import create_engine
 from sqlalchemy import event
-
-# from requests_oauthlib import OAuth1
+from requests_oauthlib import OAuth1
 from pandas.io.json import json_normalize
 from datetime import datetime, timedelta
 from pytz import timezone
@@ -162,8 +161,6 @@ class Prediction:
 
         coin_news_df["Date"] = pd.to_datetime(coin_news_df["Date"])
 
-        # print(coin_price_df)
-        # print(coin_news_df)
         # for i in range(len(coin_news_df)):
         #     price_row = coin_price_df.loc[
         #         coin_price_df["Date"] == coin_news_df["Date"][i]
@@ -179,10 +176,12 @@ class Prediction:
             coin_price_df, coin_news_df, on="Price", how="outer"
         )
         coin_price_news_df.dropna(subset=["Price"], inplace=True)
+        print("coin_price_news_df")
+        print(coin_price_news_df)
+
         return coin_price_news_df
 
     def dataAnalysis(self, coin_price_news_df):
-        # print(coin_price_news_df)
         coin_price_news_df["anger"] = pd.to_numeric(coin_price_news_df["anger"])
         coin_price_news_df["disgust"] = pd.to_numeric(coin_price_news_df["disgust"])
         coin_price_news_df["fear"] = pd.to_numeric(coin_price_news_df["fear"])
@@ -190,7 +189,7 @@ class Prediction:
         coin_price_news_df["sadness"] = pd.to_numeric(coin_price_news_df["sadness"])
 
         X = coin_price_news_df[["anger", "disgust", "fear", "joy", "sadness"]]
-        print(coin_price_news_df)
+        # print(coin_price_news_df)
         y = coin_price_news_df.Price
         lr = LinearRegression()
         lr.fit(X, y)
@@ -327,3 +326,4 @@ class Prediction:
         range = self.getPredictedRange(lr, coin_today_df)
         print(range)
         return range
+    

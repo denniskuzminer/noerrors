@@ -44,6 +44,7 @@ const Pair = (props) => {
   const [uiLoading, setuiLoading] = useState(true);
   const [tableRows, setTableRows] = useState([]);
   const [tableColumns, setTableColumns] = useState([]);
+  const [prediction, setPrediction] = useState([]);
   const [defaultLayout, setDefaultLayout] = useState({
     template: "plotly_dark",
     paper_bgcolor: "#2d353d",
@@ -149,6 +150,7 @@ const Pair = (props) => {
       setNewsAvgPlot(res.data.newsAvgPlot);
       setTwitterAvgPlot(res.data.twitterAvgPlot);
       setTwitterVolPlot(res.data.twitterVolPlot);
+      setPrediction(res.data.prediction);
       setTableRows(tableRows);
       setTableColumns(tableColumns);
       setuiLoading(false);
@@ -188,6 +190,45 @@ const Pair = (props) => {
               hideFooter={true}
               rows={tableRows}
               columns={tableColumns}
+            />
+          </Box>
+        </center>
+        <div style={{ marginTop: "10px" }} className={classes.title}>
+          <Typography variant="h4">Prediction Chart</Typography>
+        </div>
+        <center>
+          <Box style={{ height: 400, width: "60%" }}>
+            {console.log(prediction)}
+            <DataGrid
+              components={{
+                Toolbar: GridToolbar,
+              }}
+              borderColor="primary.dark"
+              density="standard"
+              hideFooter={true}
+              rows={prediction}
+              columns={[
+                {
+                  field: "2",
+                  headerName: "Predicted Price",
+                  align: "center",
+                  editable: false,
+                  flex: 0.5,
+                  renderCell: (params) => {
+                    return (
+                      "$" +
+                      ("" + params.value).replace(/\d(?=(\d{3})+\.)/g, "$&,")
+                    );
+                  },
+                },
+                {
+                  field: "Date",
+                  headerName: "Date",
+                  align: "center",
+                  editable: false,
+                  flex: 0.5,
+                },
+              ]}
             />
           </Box>
         </center>
