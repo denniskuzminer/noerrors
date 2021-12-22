@@ -45,6 +45,7 @@ import Nav from "../components/navigation";
 import Loading from "../components/loading";
 
 const back_end_uri = "http://127.0.0.1:5000/";
+// const back_end_uri = "https://c75d890655a7.ngrok.io/";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
